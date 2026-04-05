@@ -1,0 +1,5 @@
+Qt/lib/libQt6Positioning.so.6
+Qt/lib/libQt6PositioningQuick.so.6
+Qt/qml/QtPositioning/libpositioningquickplugin.so
+Qt/qml/QtPositioning/plugins.qmltypes
+Qt/qml/QtPositioning/qmldir

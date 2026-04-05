@@ -1,0 +1,38 @@
+package:
+  name: qt6-positioning-uibcdf
+  version: "6.9.2"
+
+source:
+  path: ../..
+
+build:
+  number: 0
+
+requirements:
+  host:
+    - python =3.13
+    - qt6-main =6.9.2
+  run:
+    - python =3.13
+    - qt6-main >=6.9.2,<6.10.0a0
+    - libgcc
+    - libstdcxx
+
+test:
+  commands:
+    - test -f "$PREFIX/lib/libQt6Positioning.so.6"
+    - test -f "$PREFIX/lib/libQt6PositioningQuick.so.6"
+    - test -f "$PREFIX/qml/QtPositioning/libpositioningquickplugin.so"
+    - test -f "$PREFIX/include/qt6/QtPositioning/qgeopositioninfo.h"
+    - test -f "$PREFIX/lib/cmake/Qt6Positioning/Qt6PositioningConfig.cmake"
+
+about:
+  summary: "Experimental UIBCDF Qt Positioning runtime package for Linux/Python 3.13."
+  license: "LGPL-3.0-only"
+  description: |
+    Experimental conda package for the Qt Positioning runtime layer required by
+    the provisional UIBCDF standalone Qt-for-Python family.
+
+extra:
+  recipe-maintainers:
+    - uibcdf
