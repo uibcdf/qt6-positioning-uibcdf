@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 #
 # install-local.sh — build this package from its local conda recipe and install
-# it into the active conda environment. For local testing WITHOUT waiting for the
-# uibcdf conda channel.
+# it into the active conda environment. For local testing WITHOUT the uibcdf
+# conda channel.
 #
 # This is a REPACKAGE build: it does NOT compile Qt. It copies files from a
-# prebuilt upstream PySide6 install plus the matching Qt source repo (for headers),
-# according to manifests/qt6_positioning.files.txt. You therefore need both inputs
-# available. Defaults point at Diego's paths; override with:
-#     export QT6_POSITIONING_UIBCDF_SOURCE_PREFIX=/path/to/PySide6   # has Qt/ inside
-#     export QT6_POSITIONING_UIBCDF_SOURCE_REPO=/path/to/qtpositioning
-# (If you override these, also add them to the recipe's build.script_env so conda
-#  build forwards them into the build sandbox.)
+# prebuilt upstream PySide6 install plus the matching Qt source repo (for headers).
+# Those two inputs are REQUIRED and machine-specific — you must point at them:
+#     export QT6_POSITIONING_UIBCDF_SOURCE_PREFIX=/path/to/PySide6   # dir with Qt/ inside
+#     export QT6_POSITIONING_UIBCDF_SOURCE_REPO=/path/to/qtpositioning  # dir with src/ inside
+# The recipe forwards these into the build (build.script_env). Diego's paths are
+# used only as a fallback if they happen to exist on this machine.
 #
-# Build order for the whole Qt-for-Python family — run each repo's
-# devtools/conda-build/install-local.sh in this order:
+# Family build order (run each repo's devtools/conda-build/install-local.sh):
 #     1. shiboken6-uibcdf
 #     2. pyside6-essentials-uibcdf
 #     3. qt6-positioning-uibcdf      <-- this repo
@@ -30,31 +28,37 @@ set -euo pipefail
 PKG_NAME="qt6-positioning-uibcdf"
 RECIPE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-SRC_PREFIX="${QT6_POSITIONING_UIBCDF_SOURCE_PREFIX:-/home/diego/Myopt/miniconda3/envs/molsyssuite-qt-spike/lib/python3.13/site-packages/PySide6}"
-SRC_REPO="${QT6_POSITIONING_UIBCDF_SOURCE_REPO:-/home/diego/repos@others/qtpositioning}"
+# Fallback paths (Diego's machine). Do NOT rely on these elsewhere — set the vars.
+FALLBACK_PREFIX="/home/diego/Myopt/miniconda3/envs/molsyssuite-qt-spike/lib/python3.13/site-packages/PySide6"
+FALLBACK_REPO="/home/diego/repos@others/qtpositioning"
+SRC_PREFIX="${QT6_POSITIONING_UIBCDF_SOURCE_PREFIX:-$FALLBACK_PREFIX}"
+SRC_REPO="${QT6_POSITIONING_UIBCDF_SOURCE_REPO:-$FALLBACK_REPO}"
 
 if ! conda build --version >/dev/null 2>&1; then
-    echo "error: 'conda build' is not available." >&2
-    echo "       install it with:  mamba install -n base conda-build" >&2
+    echo "error: 'conda build' is not available. Install it with:" >&2
+    echo "       mamba install -n base conda-build" >&2
     exit 1
 fi
-
 if [ -z "${CONDA_PREFIX:-}" ]; then
-    echo "error: no active conda environment (CONDA_PREFIX is empty)." >&2
-    echo "       activate the target env first:  conda activate <env>" >&2
+    echo "error: no active conda environment (activate the target env first)." >&2
     exit 1
 fi
 
 if [ ! -d "${SRC_PREFIX}/Qt" ]; then
     echo "error: upstream PySide6 not found at: ${SRC_PREFIX}" >&2
-    echo "       set QT6_POSITIONING_UIBCDF_SOURCE_PREFIX to a PySide6 dir (with Qt/ inside)." >&2
+    echo "       set it explicitly (this machine is not Diego's):" >&2
+    echo "         export QT6_POSITIONING_UIBCDF_SOURCE_PREFIX=/path/to/PySide6   # must contain Qt/" >&2
     exit 1
 fi
 if [ ! -d "${SRC_REPO}/src" ]; then
-    echo "error: Qt source repo not found at: ${SRC_REPO}" >&2
-    echo "       set QT6_POSITIONING_UIBCDF_SOURCE_REPO to the qtpositioning source checkout." >&2
+    echo "error: qtpositioning source repo not found at: ${SRC_REPO}" >&2
+    echo "         export QT6_POSITIONING_UIBCDF_SOURCE_REPO=/path/to/qtpositioning   # must contain src/" >&2
     exit 1
 fi
+
+# Export so conda build forwards them into the sandbox (recipe build.script_env).
+export QT6_POSITIONING_UIBCDF_SOURCE_PREFIX="${SRC_PREFIX}"
+export QT6_POSITIONING_UIBCDF_SOURCE_REPO="${SRC_REPO}"
 
 echo ">> [${PKG_NAME}] building from recipe: ${RECIPE_DIR}"
 echo ">>   source PySide6 : ${SRC_PREFIX}"
