@@ -6,7 +6,7 @@ source:
   path: ../..
 
 build:
-  number: 0
+  number: 1
   # Forward the repackage source inputs from the caller's environment into the
   # conda-build sandbox, so install-local.sh can point at non-default locations.
   script_env:
