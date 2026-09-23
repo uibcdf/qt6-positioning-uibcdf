@@ -1,39 +1,43 @@
 package:
   name: qt6-positioning-uibcdf
-  version: "6.9.2"
+  version: "6.10.1"
 
 source:
-  path: ../..
+  git_url: https://github.com/qt/qtpositioning.git
+  git_rev: 11d336c178adf4b8d8f7f8589bb9641bcf4b8eda
 
 build:
-  number: 1
-  # Forward the repackage source inputs from the caller's environment into the
-  # conda-build sandbox, so install-local.sh can point at non-default locations.
-  script_env:
-    - QT6_POSITIONING_UIBCDF_SOURCE_PREFIX
-    - QT6_POSITIONING_UIBCDF_SOURCE_REPO
-    - QT6_POSITIONING_UIBCDF_MANIFEST
+  number: 0
 
 requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake
+    - ninja
   host:
-    - python =3.13
-    - qt6-main =6.9.2
+    - qt6-main =6.10.1
+    - libgl-devel
+    - libegl-devel
   run:
-    - python =3.13
-    - qt6-main >=6.9.2,<6.10.0a0
+    - qt6-main =6.10.1
     - libgcc
     - libstdcxx
 
 test:
+  requires:
+    - python =3.14
   commands:
     - test -f "$PREFIX/lib/libQt6Positioning.so.6"
     - test -f "$PREFIX/lib/libQt6PositioningQuick.so.6"
-    - test -f "$PREFIX/qml/QtPositioning/libpositioningquickplugin.so"
+    - test -f "$PREFIX/lib/qt6/qml/QtPositioning/libpositioningquickplugin.so"
     - test -f "$PREFIX/include/qt6/QtPositioning/qgeopositioninfo.h"
     - test -f "$PREFIX/lib/cmake/Qt6Positioning/Qt6PositioningConfig.cmake"
+    - python -c "import ctypes, os; ctypes.CDLL(os.path.join(os.environ['PREFIX'], 'lib/libQt6Positioning.so.6'))"
+    - python -c "import ctypes, os; ctypes.CDLL(os.path.join(os.environ['PREFIX'], 'lib/libQt6PositioningQuick.so.6'))"
 
 about:
-  summary: "Experimental UIBCDF Qt Positioning runtime package for Linux/Python 3.13."
+  summary: "Experimental UIBCDF Qt Positioning 6.10.1 runtime for Linux."
   license: "LGPL-3.0-only"
   description: |
     Experimental conda package for the Qt Positioning runtime layer required by
